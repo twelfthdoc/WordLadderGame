@@ -6,9 +6,17 @@ namespace BluePrism_Technical_Test
     {
         public static void Main(string[] args)
         {
-            Startup.Initialize(args[0]);           
-            Startup.Run();
-            Startup.Close();
+            try
+            {
+                // Attempt these calls...
+                Startup.Initialize(args[0]);
+                Startup.Run();
+            }
+            finally
+            {
+                // ...but always run this.
+                Startup.Close();
+            }
         }
     }
 }
