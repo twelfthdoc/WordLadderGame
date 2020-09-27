@@ -5,6 +5,6 @@ namespace WordLadderGame.Common
 {
     public static class HelperMethods
     {
-        public static bool IsNullOrEmpty(this IEnumerable<object> enumerable) => enumerable == null || enumerable.Count() == 0;
+        public static bool IsNullOrEmpty(this IEnumerable<object> enumerable) => enumerable == null || !enumerable.Any();
     }
 }
