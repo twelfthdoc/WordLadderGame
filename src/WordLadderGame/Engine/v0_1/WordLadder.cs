@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks.Dataflow;
 using WordLadderGame.Common;
 using WordLadderGame.Interfaces;
 
@@ -23,7 +24,7 @@ namespace WordLadderGame.Engine.v0_1
              * The key is to identify like words and connect them together.
              * Once this is done, it should possible to count the number of relationships
              * and this would be the minimum number of steps.
-             * The method that most appeals to me is to create a TreeView heirarchy
+             * The method that most appeals to me is to create a B-Tree heirarchy
              * by placing the starting word as the parent at the top of the tree
              * and allow the engine to computationally add nodes until it finds the ending word.
              * This should theoretically give the shortest number of steps,
@@ -52,26 +53,29 @@ namespace WordLadderGame.Engine.v0_1
 
             // TODO: Implement Engine
 
-            var tree = new TreeView();
-            tree.Root.Value = startWord;
-            var id = 2;
+            var rootNode = new TreeNode { Id = startWord, Generation = 0 };
 
-            foreach(var word in WordList)
+            AttachChildrenNodes(rootNode, endWord);
+
+
+        }
+
+
+        internal void AttachChildrenNodes(TreeNode parent, string endWord)
+        {
+            if (!WordList.Contains(endWord)) return;
+
+            var children = WordList.Where(o => parent.Id.IsSimilar(o)).ToList();
+
+            WordList.RemoveAll(o => children.Any(s => s == o));
+
+            var childNodes = children.Select(o => new TreeNode { ParentId = parent.Id, Generation = parent.Generation + 1, Id = o }).ToList();
+            parent.Children = childNodes;
+
+            foreach (var child in childNodes)
             {
-                if (word.IsSimilar(tree.Root.Value))
-                {
-                    tree.Root.Children.Add(new TreeNode
-                    {
-                        Id = id++,
-                        ParentId = tree.Root.Id,
-                        Generation = tree.Root.Generation + 1,
-                        Value = word
-                    });
-                }
+                AttachChildrenNodes(child, endWord);
             }
-
-            var dictionary = new Dictionary<int, string>();
-
         }
     }
 }
