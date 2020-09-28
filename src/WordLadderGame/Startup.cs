@@ -3,24 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using WordLadderGame.Common;
+using WordLadderGame.Engine.v0_1;
 using WordLadderGame.Interfaces;
 
 namespace WordLadderGame
 {
     public static class Startup
     {
-        #region Private Members
-        private const string DEFAULT_LOCATION = @".\Infrastructure\words-english.txt";
-        private const int WORD_LENGTH = 5;
+        #region Private Members & Constants
+        private const string DEFAULT_LOCATION = @".\Infrastructure\words-english.txt";  // Default location of word list
+        private const int WORD_LENGTH = 4;  // For this program we only care about 4-letter words.
+
+        private static bool QuitFlag;
         #endregion
 
         #region Properties
-        public static HashSet<string> Dictionary { get; set; }
-        private static bool QuitFlag { get; set; } = false;
-        public static IWordLadder WordLadder { get; }
+        public static IWordLadder WordLadder { get; private set; }
+        public static HashSet<string> WordList { get; set; }
         #endregion
 
-        // Fucntion run on start-up
+        // Function run on start-up
         public static void Initialize(string targetLocation)
         {
             // If no argument specified, set target location to default
@@ -47,7 +49,7 @@ namespace WordLadderGame
             }
 
             // If file cannot be found/opened or the assembled dictionary has 0 entries, open default dictionary file
-            if (Dictionary.IsNullOrEmpty())
+            if (WordList.IsNullOrEmpty())
             {
                 try
                 {
@@ -62,6 +64,9 @@ namespace WordLadderGame
                     throw exception;
                 }
             }
+
+            QuitFlag = false;
+            WordLadder = new WordLadder();
         }
 
         // Main function
@@ -69,70 +74,46 @@ namespace WordLadderGame
         {
             while (!QuitFlag)
             {
-                var valid = false;
-                string startWord = null;
-                string endWord = null;
+                Console.WriteLine(@"Please enter a starting word:");
+                var startWord = GetWordFromInput();
+                Console.WriteLine();
 
-                do
-                {
-                    Console.WriteLine(@"Please enter a starting 5-letter word:");
-                    startWord = Console.ReadLine();
-
-                    if (startWord.Length != 5)
-                    {
-                        Console.WriteLine(@"Invalid word length!");
-                    }
-                    else if (!startWord.IsAlpha())
-                    {
-                        Console.WriteLine(@"Invalid characters used!");
-                    }
-                    else if (!Dictionary.Contains(startWord))
-                    {
-                        Console.WriteLine(@"Word is not in current dictionary!");
-                    }
-                    else
-                    {
-                        startWord = startWord.ToUpper();
-                        valid = true;
-                    }
-
-                    Console.WriteLine();
-                }
-                while (!valid);
-
-                valid = false;
-
-                do
-                {
-                    Console.WriteLine(@"Please enter a ending 5-letter word:");
-                    endWord = Console.ReadLine();
-
-                    if (endWord.Length != 5)
-                    {
-                        Console.WriteLine(@"Invalid word length!");
-                    }
-                    else if (!endWord.IsAlpha())
-                    {
-                        Console.WriteLine(@"Invalid characters used!");
-                    }
-                    else if (!Dictionary.Contains(endWord))
-                    {
-                        Console.WriteLine(@"Word is not in current dictionary!");
-                    }
-                    else
-                    {
-                        endWord = endWord.ToUpper();
-                        valid = true;
-                    }
-
-                    Console.WriteLine();
-                }
-                while (!valid);
-
+                Console.WriteLine(@"Please enter an ending word:");
+                var endWord = GetWordFromInput();
+                Console.WriteLine();
+                                
                 Console.WriteLine(@"--------------------------------------------------");
                 Console.WriteLine(@"Processing...");
 
+                // Pass information on to solution engine
                 WordLadder.FindSolution(startWord, endWord);
+
+                Console.WriteLine();
+
+                bool release = false;
+                while (!release)
+                {
+                    // Asks user to search again
+                    Console.WriteLine(@"Do you wish to search again? [Y/N]");
+                    var c = Console.ReadKey().Key;
+
+                    switch (c)
+                    {
+                        case ConsoleKey.Y:
+                            // User wants to search again - release and go back to beginnging of Run()
+                            release = true;
+                            break;
+                        case ConsoleKey.N:
+                            // User want to quit - release and set QuitFlag to true
+                            release = true;
+                            QuitFlag = true;
+                            break;
+                        default:
+                            // Invalid input, switch requires Y or N key to be pressed for release
+                            Console.WriteLine(@"Invalid input! Please select [Y]es or [N]o.");
+                            break;
+                    }
+                }
             }
         }
 
@@ -147,7 +128,7 @@ namespace WordLadderGame
         }
 
         #region Internal Helper Methods
-        // Assembles in-memory Dictionary for Word Ladder game
+        // Assembles in-memory Word List for the WordLadder engine
         internal static void AssembleDictionary(StreamReader file)
         {
             var wordList = new List<string>();
@@ -158,7 +139,37 @@ namespace WordLadderGame
             }
 
             // Filter words so that they contain only letters (i.e. no punctuation) and are exactly equal to our word length
-            Dictionary = wordList.Where(o => o.IsAlpha() && o.Length == WORD_LENGTH).ToHashSet();
+            // Order words alphabetically
+            // HashSet the words so that all words are unique
+            WordList = wordList.Where(o => o.IsAlpha() && o.Length == WORD_LENGTH)
+                .OrderBy(o => o)
+                .ToHashSet();
+        }
+
+        // Checks user input is valid for the WordLadder engine
+        internal static string GetWordFromInput()
+        {
+            while(true)
+            {
+                var word = Console.ReadLine();
+
+                if (word.Length != WORD_LENGTH)
+                {
+                    Console.WriteLine(@"Invalid word length!");
+                }
+                else if (!word.IsAlpha())
+                {
+                    Console.WriteLine(@"Invalid characters used!");
+                }
+                else if (!WordList.Contains(word))
+                {
+                    Console.WriteLine(@"Word is not in current dictionary!");
+                }
+                else
+                {
+                    return word.ToUpper();
+                }
+            }
         }
         #endregion
     }

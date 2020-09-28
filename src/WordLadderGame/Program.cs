@@ -1,6 +1,6 @@
-﻿using WordLadderGame;
+﻿using System.Linq;
 
-namespace BluePrism_Technical_Test
+namespace WordLadderGame
 {
     public class Program
     {
@@ -9,7 +9,7 @@ namespace BluePrism_Technical_Test
             try
             {
                 // Attempt these calls...
-                Startup.Initialize(args[0]);
+                Startup.Initialize(args.Any() ? args[0] : null);
                 Startup.Run();
             }
             finally
