@@ -196,5 +196,129 @@ namespace WordLadderGameTests.Common
             Assert.NotNull(exception);            
         }
         #endregion
+
+        #region IsSimilar Tests
+        [Fact]
+        public void IsSimilarReturnsTrueWhenWordsAreOneLetterApart()
+        {
+            var first = "span";
+            var second = "spat";
+
+            var result = false;
+            Exception exception = null;
+
+            try
+            {
+                result = first.IsSimilar(second);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+
+            Assert.NotNull(first);
+            Assert.NotNull(second);
+            Assert.Null(exception);
+            Assert.NotEqual(first, second);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void IsSimilarReturnsFalseWhenWordsAreEqual()
+        {
+            var first = "equal";
+            var second = "equal";
+
+            var result = true;
+            Exception exception = null;
+
+            try
+            {
+                result = first.IsSimilar(second);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+
+            Assert.NotNull(first);
+            Assert.NotNull(second);
+            Assert.Null(exception);
+            Assert.Equal(first, second);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsSimilarReturnsFalseWhenWordsAreMoreThanOneLetterApart()
+        {
+            var first = "first";
+            var second = "worst";
+
+            var result = true;
+            Exception exception = null;
+
+            try
+            {
+                result = first.IsSimilar(second);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+
+            Assert.NotNull(first);
+            Assert.NotNull(second);
+            Assert.Null(exception);
+            Assert.NotEqual(first, second);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsSimilarReturnsFalseWhenWordsAreNotEqualLength()
+        {
+            var first = "first";
+            var second = "second";
+
+            var result = true;
+            Exception exception = null;
+
+            try
+            {
+                result = first.IsSimilar(second);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+
+            Assert.NotNull(first);
+            Assert.NotNull(second);
+            Assert.Null(exception);
+            Assert.NotEqual(first, second);
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData("first", null)]
+        [InlineData(null, "second")]
+        public void IsSimilarThrowsWhenEitherWordIsNull(string first, string second)
+        {
+            Exception exception = null;
+
+            try
+            {
+                first.IsSimilar(second);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+
+            Assert.NotNull(exception);
+            Assert.IsType<NullReferenceException>(exception);
+        }
+
+        #endregion
     }
 }

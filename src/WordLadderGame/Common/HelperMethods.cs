@@ -14,11 +14,13 @@ namespace WordLadderGame.Common
         // Function that compares two strings and states if they are similar by one letter difference
         public static bool IsSimilar(this string first, string second)
         {
+            if (first.Length != second.Length) return false;
+
             var count = 0;
 
             for (var i = 0; i < first.Length; i++)
             {
-                if (first[i] == second[i]) count++;
+                if (first[i] != second[i]) count++;
             }
 
             return count == 1;
