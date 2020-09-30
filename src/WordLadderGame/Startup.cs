@@ -12,7 +12,7 @@ namespace WordLadderGame
     {
         #region Private Members & Constants
         private const string DEFAULT_LOCATION = @".\Infrastructure\words-english.txt";  // Default location of word list
-        private static readonly string RESULTS_LOCATION = @$".\Results File ({DateTime.Now:yyyy-MM-dd HHmmss})";  // Default location of results file
+        private static readonly string RESULTS_LOCATION = @$".\Results File ({DateTime.Now:yyyy-MM-dd HHmmss}).txt";  // Default location of results file
         private const int WORD_LENGTH = 4;  // For this program we only care about 4-letter words.
 
         private static bool QuitFlag;
