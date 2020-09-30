@@ -32,7 +32,10 @@ namespace WordLadderGame
         public static void Initialize(string[] args)
         {
             // Try to parse arguments
-            args ??= new string[4];
+            if (args == null || args.Length < 4)
+            {
+                args = new string[4];
+            }
 
             // If no argument specified, set target location to default
             DictionaryFile = args[0] ?? DEFAULT_LOCATION;
@@ -107,7 +110,7 @@ namespace WordLadderGame
                 }
 
                 // If Command Line input for EndWord is bad, discard it
-                if (EndWord != null & !IsValidInput(EndWord))
+                if (EndWord != null && !IsValidInput(EndWord))
                 {
                     EndWord = null;
                 }
