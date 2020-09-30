@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace WordLadderGame
+﻿namespace WordLadderGame
 {
     public class Program
     {
@@ -9,7 +7,7 @@ namespace WordLadderGame
             try
             {
                 // Attempt these calls...
-                Startup.Initialize(args.Any() ? args[0] : null);
+                Startup.Initialize(args);
                 Startup.Run();
             }
             finally

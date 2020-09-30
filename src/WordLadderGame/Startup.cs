@@ -12,33 +12,42 @@ namespace WordLadderGame
     {
         #region Private Members & Constants
         private const string DEFAULT_LOCATION = @".\Infrastructure\words-english.txt";  // Default location of word list
+        private static readonly string RESULTS_LOCATION = @$".\Infrastructure\Results File ({DateTime.Now:yyyy-MM-dd HHmmss})";  // Default location of results file
         private const int WORD_LENGTH = 4;  // For this program we only care about 4-letter words.
 
         private static bool QuitFlag;
         #endregion
 
         #region Properties
+        public static string DictionaryFile { get; set; }
+        public static string StartWord { get; set; }
+        public static string EndWord { get; set; }
+        public static string ResultsFile { get; set; }
+
         public static IWordLadder WordLadder { get; private set; }
         public static HashSet<string> WordList { get; set; }
         #endregion
 
         // Function run on start-up
-        public static void Initialize(string targetLocation)
+        public static void Initialize(string[] args)
         {
+            // Try to parse arguments
+            args ??= new string[4];
+
             // If no argument specified, set target location to default
-            targetLocation ??= DEFAULT_LOCATION;
+            DictionaryFile = args[0] ?? DEFAULT_LOCATION;
 
             // Test location path for invalid characters
-            if (targetLocation.Any(o => Path.GetInvalidPathChars().Any(c => c == o)))
+            if (DictionaryFile.Any(o => Path.GetInvalidPathChars().Any(c => c == o)))
             {
                 Console.WriteLine(@"Target location path contains Invalid Characters. Reverting to default dictionary...");
-                targetLocation = DEFAULT_LOCATION;
+                DictionaryFile = DEFAULT_LOCATION;
             }
 
             // Try to open file from target location
             try
             {
-                using var file = new StreamReader(targetLocation);
+                using var file = new StreamReader(DictionaryFile);
                 AssembleDictionary(file);
             }
             catch (Exception exception)
@@ -65,6 +74,15 @@ namespace WordLadderGame
                 }
             }
 
+            ResultsFile = args[3] ?? RESULTS_LOCATION;
+
+            // Test location path for invalid characters
+            if (ResultsFile.Any(o => Path.GetInvalidPathChars().Any(c => c == o)))
+            {
+                Console.WriteLine(@"Target location path contains Invalid Characters. Reverting to default dictionary...");
+                ResultsFile = RESULTS_LOCATION;
+            }
+
             QuitFlag = false;
             WordLadder = new WordLadder();
         }
@@ -74,20 +92,41 @@ namespace WordLadderGame
         {
             while (!QuitFlag)
             {
-                Console.WriteLine(@"Please enter a starting word:");
-                var startWord = GetWordFromInput();
-                Console.WriteLine();
+                // If Command Line input for StartWord is bad, discard it
+                if (StartWord != null && !IsValidInput(StartWord))
+                {
+                    StartWord = null;
+                }
 
-                Console.WriteLine(@"Please enter an ending word:");
-                var endWord = GetWordFromInput();
-                Console.WriteLine();
+                // If no start word specified, ask for user input
+                if (StartWord == null)
+                {
+                    Console.WriteLine(@"Please enter a starting word:");
+                    StartWord = GetWordFromConsoleInput();
+                    Console.WriteLine();
+                }
+
+                // If Command Line input for EndWord is bad, discard it
+                if (EndWord != null & !IsValidInput(EndWord))
+                {
+                    EndWord = null;
+                }
+
+                // If no end word specified, ask for user input
+                if (EndWord == null)
+                {
+                    Console.WriteLine(@"Please enter an ending word:");
+                    EndWord = GetWordFromConsoleInput();
+                    Console.WriteLine();
+                }
                                 
                 Console.WriteLine(@"--------------------------------------------------");
                 Console.WriteLine(@"Processing...");
 
                 // Pass information on to solution engine
-                WordLadder.FindSolution(startWord, endWord);
+                WordLadder.FindSolution(StartWord, EndWord);
 
+                Console.WriteLine(@"--------------------------------------------------");
                 Console.WriteLine();
 
                 bool release = false;
@@ -100,20 +139,27 @@ namespace WordLadderGame
                     switch (c)
                     {
                         case ConsoleKey.Y:
-                            // User wants to search again - release and go back to beginnging of Run()
+                            // User wants to search again - empty input fields, release lock and go back to beginning of Run()
+                            StartWord = null;
+                            EndWord = null;
                             release = true;
                             break;
+
                         case ConsoleKey.N:
                             // User want to quit - release and set QuitFlag to true
                             release = true;
                             QuitFlag = true;
                             break;
+
                         default:
                             // Invalid input, switch requires Y or N key to be pressed for release
                             Console.WriteLine(@"Invalid input! Please select [Y]es or [N]o.");
                             break;
                     }
                 }
+
+                Console.WriteLine();
+                Console.WriteLine();
             }
         }
 
@@ -139,37 +185,52 @@ namespace WordLadderGame
             }
 
             // Filter words so that they contain only letters (i.e. no punctuation) and are exactly equal to our word length
+            // Normalize the words to uppercase
             // Order words alphabetically
             // HashSet the words so that all words are unique
             WordList = wordList.Where(o => o.IsAlpha() && o.Length == WORD_LENGTH)
+                .Select(o => o.ToUpper())
                 .OrderBy(o => o)
                 .ToHashSet();
         }
 
-        // Checks user input is valid for the WordLadder engine
-        internal static string GetWordFromInput()
+        // Gets normalized word from user input
+        internal static string GetWordFromConsoleInput()
         {
             while(true)
             {
                 var word = Console.ReadLine();
+                word = word.ToUpper();
 
-                if (word.Length != WORD_LENGTH)
+                if (IsValidInput(word))
                 {
-                    Console.WriteLine(@"Invalid word length!");
-                }
-                else if (!word.IsAlpha())
-                {
-                    Console.WriteLine(@"Invalid characters used!");
-                }
-                else if (!WordList.Contains(word))
-                {
-                    Console.WriteLine(@"Word is not in current dictionary!");
-                }
-                else
-                {
-                    return word.ToUpper();
+                    return word;
                 }
             }
+        }
+
+        // Checks user input is valid for the WordLadder engine
+        internal static bool IsValidInput(string word)
+        {
+            if (word.Length != WORD_LENGTH)
+            {
+                Console.WriteLine(@"Invalid word length!");
+                return false;
+            }
+
+            if (!word.IsAlpha())
+            {
+                Console.WriteLine(@"Invalid characters used!");
+                return false;
+            }
+
+            if (!WordList.Contains(word))
+            {
+                Console.WriteLine(@"Word is not in current dictionary!");
+                return false;
+            }
+
+            return true;
         }
         #endregion
     }

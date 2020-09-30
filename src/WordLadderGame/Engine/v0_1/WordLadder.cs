@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using WordLadderGame.Common;
 using WordLadderGame.Interfaces;
@@ -55,7 +56,8 @@ namespace WordLadderGame.Engine.v0_1
             if (startWord == endWord)
             {
                 wordLadder.Add(startWord);
-                PrintResult(wordLadder);
+                PrintResultToConsole(wordLadder);
+                SaveResultToFile(wordLadder);
                 return;
             }
 
@@ -64,7 +66,8 @@ namespace WordLadderGame.Engine.v0_1
             {
                 wordLadder.Add(startWord);
                 wordLadder.Add(endWord);
-                PrintResult(wordLadder);
+                PrintResultToConsole(wordLadder);
+                SaveResultToFile(wordLadder);
                 return;
             }
 
@@ -82,13 +85,15 @@ namespace WordLadderGame.Engine.v0_1
                 Console.WriteLine();
                 return;
             }
-            
+
+            wordLadder.Add(targetNode.Value);
+
             // Traverse each node and add value to Word Ladder
             do
             {
                 // Add words to the Word Ladder, starting with the last word
-                wordLadder.Add(targetNode.Value);
                 targetNode = targetNode.Parent;
+                wordLadder.Add(targetNode.Value);
             }
             while (targetNode.ParentId != 0);
 
@@ -96,15 +101,11 @@ namespace WordLadderGame.Engine.v0_1
             wordLadder.Reverse();
 
             // Print Word Ladder to Console
-            foreach (var word in wordLadder)
-            {
-                Console.WriteLine(word);
-            }
+            PrintResultToConsole(wordLadder);
 
-            Console.WriteLine(@$"Number of Steps: {wordLadder.Count - 1}");
-            Console.WriteLine();
+            // Save Word Ladder to File
+            SaveResultToFile(wordLadder);
         }
-
 
         #region Internal Helper Methods
         internal void FindChildrenNodes(TreeNode parent, string target)
@@ -115,7 +116,7 @@ namespace WordLadderGame.Engine.v0_1
 
             WordList.RemoveAll(o => children.Any(s => s == o));
 
-            var childNodes = children.Select(o => new TreeNode { ParentId = parent.Id, Parent = parent, Value = o }).ToList();
+            var childNodes = children.Select(o => new TreeNode {ParentId = parent.Id, Parent = parent, Value = o}).ToList();
 
             foreach (var child in childNodes)
             {
@@ -131,21 +132,24 @@ namespace WordLadderGame.Engine.v0_1
             // Process the queue while the Queue is not empty
             while (NodeQueue.Any())
             {
-                // Obtain next node from the Queue
-                node = NodeQueue.Dequeue();
+                // Peek next node from the Queue
+                node = NodeQueue.Peek();
 
                 // If we have found the node we are looking for, return it.
                 if (node.Value == target) return node;
 
                 // Find Children nodes and assign this node as their parent.
                 FindChildrenNodes(node, target);
+
+                // Remove node from the Queue
+                NodeQueue.Dequeue();
             }
 
             // If the Queue is empty, the target cannot be found.
             return null;
         }
         
-        internal void PrintResult(IList<string> list)
+        internal void PrintResultToConsole(IList<string> list)
         {
             foreach (var word in list)
             {
@@ -154,6 +158,27 @@ namespace WordLadderGame.Engine.v0_1
 
             Console.WriteLine($@"Number of Steps: {list.Count - 1}");
             Console.WriteLine();
+        }
+
+        internal void SaveResultToFile(IList<string> list)
+        {
+            var targetPath = Startup.ResultsFile;
+
+            // If file exists, delete it before creating new one
+            if (File.Exists(targetPath))
+            {
+                File.Delete(targetPath);
+            }
+
+            using var file = File.CreateText(targetPath);
+
+            foreach (var word in list)
+            {
+                file.WriteLine(word);
+            }
+
+            file.WriteLine(@"--------------------------------------------------");
+            file.WriteLine($@"Number of Steps: {list.Count - 1}");
         }
         #endregion
     }
