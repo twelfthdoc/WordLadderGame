@@ -8,12 +8,15 @@ using WordLadderGame.Interfaces;
 
 namespace WordLadderGame
 {
+    /// <summary>
+    /// Class that contains methods to run when starting the program
+    /// </summary>
     public static class Startup
     {
         #region Private Members & Constants
         private const string DEFAULT_LOCATION = @".\Infrastructure\words-english.txt";  // Default location of word list
         private static readonly string RESULTS_LOCATION = @$".\Results File ({DateTime.Now:yyyy-MM-dd HHmmss}).txt";  // Default location of results file
-        private const int WORD_LENGTH = 4;  // For this program we only care about 4-letter words.
+        private const uint WORD_LENGTH = 4;  // For this program we only care about 4-letter words. Different default word lengths can be set to any reasonable number (3-9 letters long).
 
         private static bool QuitFlag;
         #endregion
@@ -28,7 +31,12 @@ namespace WordLadderGame
         public static HashSet<string> WordList { get; set; }
         #endregion
 
-        // Function run on start-up
+        /// <summary>
+        /// Function to run at program start-up
+        /// </summary>
+        /// <param name="args">
+        /// Startup parameters
+        /// </param>
         public static void Initialize(string[] args)
         {
             // Try to parse arguments
@@ -41,7 +49,7 @@ namespace WordLadderGame
             DictionaryFile = args[0] ?? DEFAULT_LOCATION;
 
             // Test location path for invalid characters
-            if (DictionaryFile.Any(o => Path.GetInvalidPathChars().Any(c => c == o)))
+            if (DictionaryFile.Any(o => Path.GetInvalidPathChars().Contains(o)))  
             {
                 Console.WriteLine(@"Target location path contains Invalid Characters. Reverting to default dictionary...");
                 DictionaryFile = DEFAULT_LOCATION;
@@ -73,14 +81,14 @@ namespace WordLadderGame
                     // If default dictionary file cannot be opened, report error and throw exception
                     Console.WriteLine(@"The default dictionary cannot be read.");
                     Console.WriteLine(exception.Message);
-                    throw exception;
+                    throw;
                 }
             }
 
             ResultsFile = args[3] ?? RESULTS_LOCATION;
 
             // Test location path for invalid characters
-            if (ResultsFile.Any(o => Path.GetInvalidPathChars().Any(c => c == o)))
+            if (ResultsFile.Any(o => Path.GetInvalidPathChars().Contains(o)))
             {
                 Console.WriteLine(@"Target location path contains Invalid Characters. Reverting to default dictionary...");
                 ResultsFile = RESULTS_LOCATION;
@@ -90,7 +98,9 @@ namespace WordLadderGame
             WordLadder = new WordLadder();
         }
 
-        // Main function
+        /// <summary>
+        /// Main function
+        /// </summary>
         public static void Run()
         {
             while (!QuitFlag)
@@ -166,7 +176,9 @@ namespace WordLadderGame
             }
         }
 
-        // Function run on closing the program
+        /// <summary>
+        /// Function run when closing the program
+        /// </summary>
         public static void Close()
         {
             // Do stuff here that needs to be done before closing the program
@@ -177,7 +189,10 @@ namespace WordLadderGame
         }
 
         #region Internal Helper Methods
-        // Assembles in-memory Word List for the WordLadder engine
+        /// <summary>
+        /// Assembles in-memory word list for the WordLadder engine
+        /// </summary>
+        /// <param name="file"></param>
         internal static void AssembleDictionary(StreamReader file)
         {
             var wordList = new List<string>();
@@ -197,7 +212,12 @@ namespace WordLadderGame
                 .ToHashSet();
         }
 
-        // Gets normalized word from user input
+        /// <summary>
+        /// Gets normalized word from user input
+        /// </summary>
+        /// <returns>
+        /// Returns a normalized string for the WordLadder engine
+        /// </returns>
         internal static string GetWordFromConsoleInput()
         {
             while(true)
@@ -212,7 +232,13 @@ namespace WordLadderGame
             }
         }
 
-        // Checks user input is valid for the WordLadder engine
+        /// <summary>
+        /// Checks user input is valid for the WordLadder engine
+        /// </summary>
+        /// <param name="word"></param>
+        /// <returns>
+        /// Returns <see langword="true"/> if the string is a valid input, else returns <see langword="false"/>
+        /// </returns>
         internal static bool IsValidInput(string word)
         {
             if (word.Length != WORD_LENGTH)

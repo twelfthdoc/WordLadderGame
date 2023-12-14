@@ -52,7 +52,7 @@ namespace WordLadderGameTests.Common
         }
 
         [Fact]
-        public void IsAlphaReturnsFalseWhenStringHasPunctuation()
+        public void IsAlphaReturnsFalseWhenStringHasSymbols()
         {
             var sut = @"!$%^";
             Exception exception = null;
@@ -318,7 +318,6 @@ namespace WordLadderGameTests.Common
             Assert.NotNull(exception);
             Assert.IsType<NullReferenceException>(exception);
         }
-
         #endregion
     }
 }

@@ -2,6 +2,10 @@
 {
     public class Program
     {
+        /// <summary>
+        /// The program's main entry point
+        /// </summary>
+        /// <param name="args"></param>
         public static void Main(string[] args)
         {
             try
